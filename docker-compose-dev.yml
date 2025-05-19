@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_LOCAL}
-      POSTGRES_USER: ${POSTGRES_USER_LOCAL}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_LOCAL}
+      POSTGRES_DB: ${POSTGRES_DB_DEV}
+      POSTGRES_USER: ${POSTGRES_USER_DEV}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEV}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -46,7 +46,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=clientebase.settings.local
+      - DJANGO_SETTINGS_MODULE=clientebase.settings.dev
     env_file:
       - ./backend/.env
     depends_on:
@@ -61,10 +61,10 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_ENV=LOCAL
-      - VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL_LOCAL}
-      - VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM_LOCAL}
-      - VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID_LOCAL}
+      - VITE_ENV=DEV
+      - VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL_DEV}
+      - VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM_DEV}
+      - VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID_DEV}
     env_file:
       - ./frontend/.env
     depends_on:

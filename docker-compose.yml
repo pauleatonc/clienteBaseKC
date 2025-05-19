@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: clientebase
-      POSTGRES_USER: clientebase
-      POSTGRES_PASSWORD: clientebase123
+      POSTGRES_DB: ${POSTGRES_DB_PROD}
+      POSTGRES_USER: ${POSTGRES_USER_PROD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_PROD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -16,6 +16,8 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=clientebase.settings.prod
     env_file:
       - ./backend/.env
     depends_on:
@@ -28,6 +30,11 @@ services:
       - /app/node_modules
     ports:
       - "5173:5173"
+    environment:
+      - VITE_ENV=PROD
+      - VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL_PROD}
+      - VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM_PROD}
+      - VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID_PROD}
     env_file:
       - ./frontend/.env
     depends_on:

@@ -1,6 +1,6 @@
 from rest_framework import authentication, exceptions
 from django.conf import settings
-from .keycloak import KeycloakService
+from ..services.keycloak_service import KeycloakService
 import logging
 import jwt
 from urllib.parse import urlparse

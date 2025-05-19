@@ -20,17 +20,18 @@ function App() {
   useEffect(() => {
     const initializeKeycloak = async () => {
       try {
+        const env = import.meta.env.VITE_ENV || 'local'
         const keycloakConfig = {
-          url: import.meta.env.VITE_KEYCLOAK_URL,
-          realm: import.meta.env.VITE_KEYCLOAK_REALM,
-          clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID
+          url: import.meta.env[`VITE_KEYCLOAK_URL_${env.toUpperCase()}`],
+          realm: import.meta.env[`VITE_KEYCLOAK_REALM_${env.toUpperCase()}`],
+          clientId: import.meta.env[`VITE_KEYCLOAK_CLIENT_ID_${env.toUpperCase()}`]
         }
 
-        console.log('Keycloak config:', keycloakConfig) // Para debug
+        console.log('Current environment:', env)
+        console.log('Keycloak config:', keycloakConfig)
 
         const keycloakClient = new Keycloak(keycloakConfig)
 
-        // Configuración mínima sin SSO ni iframe
         await keycloakClient.init({
           onLoad: null,
           pkceMethod: 'S256',
@@ -38,10 +39,8 @@ function App() {
           redirectUri: window.location.origin + window.location.pathname
         })
 
-        // Verificar si hay un token válido
         const isAuthenticated = keycloakClient.authenticated || false
 
-        // Configurar interceptor de Axios para tokens
         axios.interceptors.request.use(
           (config) => {
             if (keycloakClient.authenticated && keycloakClient.token) {

@@ -5,7 +5,7 @@ from jose.exceptions import JWTError, ExpiredSignatureError
 import requests
 from functools import lru_cache
 import json
-from .keycloak import KeycloakService
+from ..services.keycloak_service import KeycloakService
 import logging
 
 logger = logging.getLogger(__name__)
