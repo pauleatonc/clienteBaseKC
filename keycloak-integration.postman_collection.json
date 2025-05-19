@@ -1,0 +1,437 @@
+{
+	"info": {
+		"_postman_id": "keycloak-integration",
+		"name": "Keycloak Integration con Clave Única y EntraID",
+		"description": "# Integración con Keycloak\n\n## Métodos de autenticación disponibles:\n- Clave Única (Chile)\n- EntraID (Microsoft)\n\n## Flujo simplificado:\n\n1. **Obtener token**: Usa el método OAuth 2.0 para Clave Única o EntraID (NO hacer clic en Send, usar el botón \"Get New Access Token\")\n2. **Al recibir el token**: Haz clic en \"Use Token\" para guardar tanto el access_token como el id_token\n3. **Verificar variables**: Después de autenticar, revisa la pestaña \"Variables\" para confirmar que id_token tiene un valor\n\n## Credenciales para pruebas Clave Única:\n- RUN: 55.555.555-5\n- Password: testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. OpenID Connect Discovery Document",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/.well-known/openid-configuration",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						".well-known",
+						"openid-configuration"
+					]
+				},
+				"description": "Obtiene el documento de descubrimiento de OpenID Connect, que contiene información sobre todos los endpoints disponibles y las características soportadas por el servidor Keycloak.\n\nEste documento es útil para conocer las capacidades del servidor y confirmar las URLs de los distintos endpoints."
+			},
+			"response": []
+		},
+		{
+			"name": "1A. Get Token with Clave Única",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "scope",
+							"value": "openid profile email",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "https://ingreso-desa.sag.gob.cl/realms/dev/protocol/openid-connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "https://ingreso-desa.sag.gob.cl/realms/dev/protocol/openid-connect/auth",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "sag-dummy-front",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback",
+							"type": "string"
+						},
+						{
+							"key": "responseType",
+							"value": "code id_token",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "Keycloak Auth Token",
+							"type": "string"
+						},
+						{
+							"key": "useBrowser",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "undefined",
+							"type": "any"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/protocol/openid-connect/auth?client_id={{frontend_client_id}}&response_type=code&redirect_uri=https://oauth.pstmn.io/v1/callback&scope=openid profile email claveUnica&state=123&kc_idp_hint=clave-unica",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						"protocol",
+						"openid-connect",
+						"auth"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{frontend_client_id}}"
+						},
+						{
+							"key": "response_type",
+							"value": "code"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback"
+						},
+						{
+							"key": "scope",
+							"value": "openid profile email claveUnica"
+						},
+						{
+							"key": "state",
+							"value": "123"
+						},
+						{
+							"key": "kc_idp_hint",
+							"value": "clave-unica"
+						}
+					]
+				},
+				"description": "# OBTENER TOKEN CON CLAVE ÚNICA\n\n## ⚠️ IMPORTANTE: NO USAR EL BOTÓN \"SEND\" ⚠️\n\n### Pasos:\n\n1. Haz clic en la pestaña \"Authorization\" (arriba, no en Body)\n2. Haz clic en el botón naranja \"Get New Access Token\"\n3. Se abrirá una ventana del navegador\n4. Ingresa estos datos en Clave Única:\n   - RUN: 55.555.555-5\n   - Password: testing\n5. Al completar la autenticación, verás los detalles del token\n6. Haz clic en el botón \"USE TOKEN\" para guardar tanto el access_token como el id_token\n7. Verifica que las variables de colección tengan valores para access_token e id_token"
+			},
+			"response": []
+		},
+		{
+			"name": "1B. Get Token with EntraID",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "scope",
+							"value": "openid profile email",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "https://ingreso-desa.sag.gob.cl/realms/dev/protocol/openid-connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "https://ingreso-desa.sag.gob.cl/realms/dev/protocol/openid-connect/auth",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "sag-dummy-front",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback",
+							"type": "string"
+						},
+						{
+							"key": "responseType",
+							"value": "code id_token",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "Keycloak Auth Token",
+							"type": "string"
+						},
+						{
+							"key": "useBrowser",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "undefined",
+							"type": "any"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/protocol/openid-connect/auth?client_id={{frontend_client_id}}&response_type=code&redirect_uri=https://oauth.pstmn.io/v1/callback&scope=openid profile email&state=123&kc_idp_hint=entraid",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						"protocol",
+						"openid-connect",
+						"auth"
+					],
+					"query": [
+						{
+							"key": "client_id",
+							"value": "{{frontend_client_id}}"
+						},
+						{
+							"key": "response_type",
+							"value": "code"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback"
+						},
+						{
+							"key": "scope",
+							"value": "openid profile email"
+						},
+						{
+							"key": "state",
+							"value": "123"
+						},
+						{
+							"key": "kc_idp_hint",
+							"value": "entraid"
+						}
+					]
+				},
+				"description": "# OBTENER TOKEN CON ENTRAID (MICROSOFT)\n\n## ⚠️ IMPORTANTE: NO USAR EL BOTÓN \"SEND\" ⚠️\n\n### Pasos:\n\n1. Haz clic en la pestaña \"Authorization\" (arriba, no en Body)\n2. Haz clic en el botón naranja \"Get New Access Token\"\n3. Se abrirá una ventana del navegador\n4. Selecciona o ingresa tus credenciales de EntraID (Microsoft)\n5. Al completar la autenticación, verás los detalles del token\n6. Haz clic en el botón \"USE TOKEN\" para guardar tanto el access_token como el id_token\n7. Verifica que las variables de colección tengan valores para access_token e id_token\n\n**Nota**: Este método utiliza el proveedor de identidad Microsoft EntraID configurado en Keycloak."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get User Info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "PEGA_AQUÍ_EL_TOKEN_MANUALMENTE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/protocol/openid-connect/userinfo",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						"protocol",
+						"openid-connect",
+						"userinfo"
+					]
+				},
+				"description": "# OBTENER INFORMACIÓN DEL USUARIO\n\n## ⚠️ DEBES PEGAR EL TOKEN MANUALMENTE ⚠️\n\n### Pasos:\n\n1. Ve a la pestaña \"Authorization\" (arriba)\n2. Verifica que está seleccionado \"Bearer Token\"\n3. En el campo \"Token\", BORRA el texto \"PEGA_AQUÍ_EL_TOKEN_MANUALMENTE\"\n4. PEGA el token que copiaste de la solicitud anterior (ya sea de Clave Única o EntraID)\n5. Ahora sí, haz clic en \"Send\"\n\nSi recibes error \"Forbidden\", es probable que el token haya expirado. Genera uno nuevo con la primera solicitud."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Introspect Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{backend_client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{backend_client_secret}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/protocol/openid-connect/token/introspect",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						"protocol",
+						"openid-connect",
+						"token",
+						"introspect"
+					]
+				},
+				"description": "Valida un token y obtiene información sobre él.\n\nEsta petición usará automáticamente el token almacenado en la variable {{access_token}}."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Logout",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{keycloak_url}}/realms/{{realm_name}}/protocol/openid-connect/logout?post_logout_redirect_uri=https://oauth.pstmn.io/v1/callback&client_id={{frontend_client_id}}&id_token_hint={{id_token}}&state=logout_complete",
+					"host": [
+						"{{keycloak_url}}"
+					],
+					"path": [
+						"realms",
+						"{{realm_name}}",
+						"protocol",
+						"openid-connect",
+						"logout"
+					],
+					"query": [
+						{
+							"key": "post_logout_redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback"
+						},
+						{
+							"key": "client_id",
+							"value": "{{frontend_client_id}}"
+						},
+						{
+							"key": "id_token_hint",
+							"value": "{{id_token}}"
+						},
+						{
+							"key": "state",
+							"value": "logout_complete"
+						}
+					]
+				},
+				"description": "Cierra la sesión del usuario en Keycloak.\n\n## ⚠️ REQUISITOS PARA QUE FUNCIONE CORRECTAMENTE ⚠️\n\n1. Debes tener un valor en la variable id_token. Comprueba en la pestaña \"Variables\" de la colección.\n2. Si no tienes id_token, debes volver a autenticarte usando \"Get Token with...\" y hacer clic en \"USE TOKEN\".\n3. El post_logout_redirect_uri debe estar registrado en la configuración del cliente en Keycloak.\n4. Para comprobar si el logout funcionó, vuelve a llamar el endpoint \"Get User Info\" con tu token anterior. Si recibe error, el logout fue exitoso.\n\nSi continúa fallando, prueba estas alternativas:\n\n1. Elimina el parámetro id_token_hint y solo usa client_id\n2. Cambia post_logout_redirect_uri a una URI registrada en Keycloak"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Automaticamente guarda el token de acceso de la respuesta si está presente",
+					"if (pm.response.code === 200) {",
+					"    try {",
+					"        var jsonData = pm.response.json();",
+					"        if (jsonData.access_token) {",
+					"            pm.collectionVariables.set('access_token', jsonData.access_token);",
+					"            console.log('Token de acceso guardado correctamente');",
+					"            ",
+					"            // También guardar el id_token si está presente (necesario para logout)",
+					"            if (jsonData.id_token) {",
+					"                pm.collectionVariables.set('id_token', jsonData.id_token);",
+					"                console.log('ID Token guardado correctamente');",
+					"            } else {",
+					"                console.log('ADVERTENCIA: No se encontró id_token en la respuesta');",
+					"            }",
+					"        }",
+					"    } catch (e) {",
+					"        console.log('No se pudo guardar el token: ' + e);",
+					"    }",
+					"}",
+					"",
+					"// Para comprobar si el logout fue exitoso",
+					"if (pm.request.url.toString().includes('/logout') && pm.response.code === 302) {",
+					"    console.log('Logout procesado. Código de respuesta: ' + pm.response.code);",
+					"    console.log('Redirigiendo a: ' + pm.response.headers.get('Location'));",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "id_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "keycloak_url",
+			"value": "https://ingreso-desa.sag.gob.cl",
+			"type": "string"
+		},
+		{
+			"key": "realm_name",
+			"value": "dev",
+			"type": "string"
+		},
+		{
+			"key": "frontend_client_id",
+			"value": "sag-dummy-front",
+			"type": "string"
+		},
+		{
+			"key": "backend_client_id",
+			"value": "sag-dummy-back",
+			"type": "string"
+		},
+		{
+			"key": "backend_client_secret",
+			"value": "zvckA1hpSkPSNLDOPcFV9u89w01caeHF",
+			"type": "string"
+		}
+	]
+}

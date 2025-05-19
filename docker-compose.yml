@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: clientebase
+      POSTGRES_USER: clientebase
+      POSTGRES_PASSWORD: clientebase123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  postgres_keycloak_data: 
