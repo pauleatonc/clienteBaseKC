@@ -2,13 +2,18 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_DEV}
-      POSTGRES_USER: ${POSTGRES_USER_DEV}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEV}
+      POSTGRES_DB: clientebase
+      POSTGRES_USER: clientebase
+      POSTGRES_PASSWORD: clientebase123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clientebase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   postgres_keycloak:
     image: postgres:14
@@ -20,6 +25,11 @@ services:
       - postgres_keycloak_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -37,7 +47,8 @@ services:
       - /home/paul/Documents/AndesDigital/kc-sag-template:/opt/keycloak/themes/custom-theme-sag
     command: start-dev --spi-theme-static-max-age=-1 --spi-theme-cache-themes=false --spi-theme-cache-templates=false
     depends_on:
-      - postgres_keycloak
+      postgres_keycloak:
+        condition: service_healthy
 
   backend:
     build: ./backend
@@ -50,8 +61,10 @@ services:
     env_file:
       - ./backend/.env
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
 
   frontend:
     build: ./frontend
