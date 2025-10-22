@@ -10,7 +10,7 @@ function Home() {
   const { 
     keycloak, 
     authenticated, 
-    isInitialized, 
+    loading, 
     error, 
     userInfo,
     handleLogin, 
@@ -21,7 +21,11 @@ function Home() {
     setActiveView('userInfo')
   }, [])
 
-  if (!isInitialized) {
+  const handlePesticidesClick = useCallback(() => {
+    setActiveView('pesticides')
+  }, [])
+
+  if (loading) {
     return (
       <div className="vh-100 d-flex justify-content-center align-items-center">
         <div className="spinner-border text-primary" role="status">
@@ -51,6 +55,7 @@ function Home() {
                       handleLogout={handleLogout}
                       activeView={activeView}
                       onUserInfoClick={handleUserInfoClick}
+                      onPesticidesClick={handlePesticidesClick}
                     />
                   </div>
                 </div>

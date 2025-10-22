@@ -3,35 +3,15 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000/api';
 
 /**
- * Intercambia el token de Keycloak por un token de backend
- */
-export const exchangeToken = async (keycloakToken) => {
-  try {
-    const response = await axios.post(`${API_URL}/auth/token/`, null, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${keycloakToken}`
-      },
-      withCredentials: true
-    });
-    return response.data.token;
-  } catch (error) {
-    console.error('Error exchanging token:', error);
-    throw error;
-  }
-};
-
-/**
  * Obtiene información del usuario autenticado
+ * Usa directamente el access_token de Keycloak
  */
-export const fetchUserData = async (backendToken) => {
+export const fetchUserData = async () => {
   try {
     const response = await axios.get(`${API_URL}/test/`, {
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${backendToken}`
+        'Content-Type': 'application/json'
       },
       withCredentials: true
     });
@@ -44,14 +24,14 @@ export const fetchUserData = async (backendToken) => {
 
 /**
  * Obtiene la lista de pesticidas
+ * Usa directamente el access_token de Keycloak
  */
-export const fetchPesticides = async (backendToken) => {
+export const fetchPesticides = async () => {
   try {
     const response = await axios.get(`${API_URL}/pesticides/`, {
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${backendToken}`
+        'Content-Type': 'application/json'
       },
       withCredentials: true
     });

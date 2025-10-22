@@ -6,7 +6,8 @@ const AuthButtons = ({
   handleLogin, 
   handleLogout, 
   activeView, 
-  onUserInfoClick, 
+  onUserInfoClick,
+  onPesticidesClick,
   loading
 }) => {
   if (!authenticated) {
@@ -25,13 +26,7 @@ const AuthButtons = ({
       >
         Información JWT Keycloak
       </button>
-      <button 
-        className={`btn ${activeView === 'pesticides' ? 'btn-success' : 'btn-primary'}`}
-        onClick={onPesticidesClick}
-        disabled={loading}
-      >
-        {loading ? 'Cargando...' : 'Ejemplo de llamada a API'}
-      </button>
+
       <button 
         className="btn btn-outline-primary" 
         onClick={handleLogout}

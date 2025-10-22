@@ -1,0 +1,64 @@
+/* Franja de gobierno */
+.gobierno-chile-footer::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 140px;
+    height: 5px;
+    background: linear-gradient(to right, #0032A0 50%, #D52B1E 50%);
+}
+
+/* Estilos adicionales para asegurar que funcione */
+.clave-tributaria {
+    background-color: #002a46 ;
+    color: white ;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .clave-tributaria:hover {
+    background-color: #003a5c ;
+    opacity: 0.9;
+  }
+  
+  .clave-tributaria img {
+    max-height: 32px;
+    width: auto;
+  }
+
+  /* Estilos para Clave Única */
+  .clave-unica {
+    background-color: #0051A8 ;
+    color: white ;
+    height: 48px ;
+    transition: all 0.2s ease-in-out;
+    position: relative ;
+    isolation: isolate ;
+  }
+  
+  .clave-unica::after {
+    content: '' ;
+    position: absolute ;
+    inset: 0 ;
+    background-color: transparent ;
+    transition: background-color 0.2s ease-in-out ;
+    border-radius: 0.375rem ;
+    z-index: -1 ;
+  }
+  
+  .clave-unica:hover::after {
+    background-color: rgba(0, 0, 0, 0.26) ;
+  }
+  
+  .clave-unica span {
+    height: 21px ;
+    display: flex ;
+    align-items: center ;
+  }
+
+  /* Estilos para Microsoft */
+  .microsoft {
+    height: 48px ;
+    display: flex ;
+    align-items: center ;
+  }

@@ -1,113 +1,160 @@
 import { useState, useEffect, useCallback } from 'react';
-import { initKeycloak, login, logout, extractUserInfo } from '../services/keycloak';
-import { exchangeToken, fetchUserData } from '../services/api';
+import { 
+  initKeycloak, 
+  login, 
+  logout, 
+  checkAuthStatus, 
+  extractUserInfo,
+  startTokenRotation,
+  stopTokenRotation
+} from '../services/keycloak';
 
+/**
+ * Hook personalizado para manejar la autenticación con Keycloak
+ */
 export const useAuth = () => {
   const [keycloak, setKeycloak] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState(null);
-  const [backendToken, setBackendToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [tokenRotationInterval, setTokenRotationInterval] = useState(null);
 
   // Inicializar Keycloak
   useEffect(() => {
-    const initialize = async () => {
+    const initializeAuth = async () => {
       try {
-        const { keycloak: keycloakClient, authenticated: authStatus } = await initKeycloak();
-        setKeycloak(keycloakClient);
-        setAuthenticated(authStatus);
-        setIsInitialized(true);
+        setLoading(true);
+        setError(null);
         
-        // Si está autenticado, extraer información del usuario
-        if (authStatus) {
-          const userInfo = extractUserInfo(keycloakClient);
-          setUserInfo(userInfo);
+        const { keycloak: kc, authenticated: isAuthenticated } = await initKeycloak();
+        
+        setKeycloak(kc);
+        setAuthenticated(isAuthenticated);
+        
+        if (isAuthenticated) {
+          const user = extractUserInfo(kc);
+          setUserInfo(user);
           
-          // Obtener token de backend
-          try {
-            const token = await exchangeToken(keycloakClient.token);
-            setBackendToken(token);
-          } catch (err) {
-            console.error('Error exchanging token:', err);
-          }
+          // Iniciar rotación automática de tokens
+          const interval = startTokenRotation(kc);
+          setTokenRotationInterval(interval);
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        setError('Error al inicializar la autenticación');
-        setIsInitialized(true);
+      } catch (err) {
+        console.error('Error initializing auth:', err);
+        setError(err?.message || 'Error de inicialización de autenticación');
+      } finally {
+        setLoading(false);
       }
     };
 
-    initialize();
+    initializeAuth();
   }, []);
 
-  // Función para iniciar sesión
-  const handleLogin = useCallback(() => {
-    if (keycloak) {
+  // Verificar estado de autenticación periódicamente
+  useEffect(() => {
+    if (!keycloak) return;
+
+    const checkAuth = async () => {
       try {
-        login(keycloak).catch(error => {
-          console.error('Login error:', error);
-          setError('Error al iniciar sesión');
-        });
-      } catch (error) {
-        console.error('Login error:', error);
-        setError('Error al iniciar sesión');
+        const authStatus = await checkAuthStatus(keycloak);
+        setAuthenticated(authStatus.authenticated);
+        setUserInfo(authStatus.userInfo);
+        
+        if (authStatus.authenticated && !tokenRotationInterval) {
+          // Iniciar rotación automática si no está activa
+          const interval = startTokenRotation(keycloak);
+          setTokenRotationInterval(interval);
+        } else if (!authStatus.authenticated && tokenRotationInterval) {
+          // Detener rotación automática si no está autenticado
+          stopTokenRotation(tokenRotationInterval);
+          setTokenRotationInterval(null);
+        }
+      } catch (err) {
+        console.error('Error checking auth status:', err);
+        setError(err.message);
       }
+    };
+
+    // Verificar cada 30 segundos
+    const interval = setInterval(checkAuth, 30000);
+    
+    return () => {
+      clearInterval(interval);
+      if (tokenRotationInterval) {
+        stopTokenRotation(tokenRotationInterval);
+      }
+    };
+  }, [keycloak, tokenRotationInterval]);
+
+  // Función para iniciar sesión
+  const handleLogin = useCallback(async () => {
+    if (!keycloak) {
+      setError('Keycloak no inicializado');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      await login(keycloak);
+    } catch (err) {
+      console.error('Error during login:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }, [keycloak]);
 
   // Función para cerrar sesión
-  const handleLogout = useCallback(() => {
-    if (keycloak) {
-      try {
-        logout(keycloak).catch(error => {
-          console.error('Logout error:', error);
-          setError('Error al cerrar sesión');
-        });
-      } catch (error) {
-        console.error('Logout error:', error);
-        setError('Error al cerrar sesión');
-      }
+  const handleLogout = useCallback(async () => {
+    if (!keycloak) {
+      setError('Keycloak no inicializado');
+      return;
     }
-  }, [keycloak]);
 
-  // Función para obtener datos protegidos
-  const fetchProtectedData = useCallback(async () => {
-    if (!keycloak || !authenticated) return null;
-    
     try {
-      // Si no tenemos token de backend, obtenerlo
-      let token = backendToken;
-      if (!token) {
-        token = await exchangeToken(keycloak.token);
-        setBackendToken(token);
+      setLoading(true);
+      setError(null);
+      
+      // Detener rotación automática
+      if (tokenRotationInterval) {
+        stopTokenRotation(tokenRotationInterval);
+        setTokenRotationInterval(null);
       }
       
-      // Obtener datos del usuario
-      const userData = await fetchUserData(token);
-      return userData;
-    } catch (error) {
-      console.error('Error fetching protected data:', error);
-      setError('Error al obtener datos protegidos');
-      
-      // Si recibimos un 401, intentar renovar el token
-      if (error.response?.status === 401) {
-        handleLogin();
-      }
-      return null;
+      await logout(keycloak);
+      setAuthenticated(false);
+      setUserInfo(null);
+    } catch (err) {
+      console.error('Error during logout:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [keycloak, authenticated, backendToken, handleLogin]);
+  }, [keycloak, tokenRotationInterval]);
+
+  // Función para mostrar información del usuario
+  const handleUserInfoClick = useCallback(() => {
+    // Esta función se puede personalizar según las necesidades
+    console.log('User info clicked:', userInfo);
+  }, [userInfo]);
+
+  // Función para mostrar pesticidas
+  const handlePesticidesClick = useCallback(() => {
+    // Esta función se puede personalizar según las necesidades
+    console.log('Pesticides clicked');
+  }, []);
 
   return {
     keycloak,
     authenticated,
-    isInitialized,
-    error,
     userInfo,
-    backendToken,
+    loading,
+    error,
     handleLogin,
     handleLogout,
-    fetchProtectedData
+    handleUserInfoClick,
+    handlePesticidesClick
   };
-}; 
+};

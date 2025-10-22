@@ -21,7 +21,7 @@ const ClaveUnicaButton = ({ onClick }) => {
           fill="white"
         />
       </svg>
-      Iniciar Sesión con ClaveÚnica
+      Iniciar sesión
     </button>
   )
 }

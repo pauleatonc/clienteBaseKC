@@ -30,7 +30,7 @@ const UserInfoCard = ({ userInfo }) => {
           </div>
         </div>
       </div>
-      <AuthFlowDescription />
+     {/* <AuthFlowDescription /> */}
     </div>
   );
 };

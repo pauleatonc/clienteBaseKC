@@ -2,13 +2,20 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_LOCAL}
-      POSTGRES_USER: ${POSTGRES_USER_LOCAL}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_LOCAL}
+      POSTGRES_DB: clientebase
+      POSTGRES_USER: clientebase
+      POSTGRES_PASSWORD: clientebase
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clientebase -d clientebase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgres_keycloak:
     image: postgres:14
@@ -20,6 +27,13 @@ services:
       - postgres_keycloak_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -30,14 +44,19 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres_keycloak:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak123
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
     ports:
       - "8080:8080"
     volumes:
-      - /home/paul/Documents/AndesDigital/keycloak-theme-test:/opt/keycloak/themes/custom-theme
-      - /home/paul/Documents/AndesDigital/kc-sag-template:/opt/keycloak/themes/custom-theme-sag
+      - /home/pauleatonc/Documents/AndesDigital/ClienteBaseKeycloak/kc-template:/opt/keycloak/themes/custom-theme
     command: start-dev --spi-theme-static-max-age=-1 --spi-theme-cache-themes=false --spi-theme-cache-templates=false
+    networks:
+      - app-network
     depends_on:
-      - postgres_keycloak
+      postgres_keycloak:
+        condition: service_healthy
 
   backend:
     build: ./backend
@@ -49,9 +68,13 @@ services:
       - DJANGO_SETTINGS_MODULE=clientebase.settings.local
     env_file:
       - ./backend/.env
+    networks:
+      - app-network
     depends_on:
-      - postgres
-      - keycloak
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
 
   frontend:
     build: ./frontend
@@ -62,14 +85,18 @@ services:
       - "5173:5173"
     environment:
       - VITE_ENV=LOCAL
-      - VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL_LOCAL}
-      - VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM_LOCAL}
-      - VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID_LOCAL}
-    env_file:
-      - ./frontend/.env
+      - VITE_KEYCLOAK_URL_LOCAL=http://localhost:8080
+      - VITE_KEYCLOAK_REALM_LOCAL=test
+      - VITE_KEYCLOAK_CLIENT_ID_LOCAL=frontintegration
+    networks:
+      - app-network
     depends_on:
       - backend
 
 volumes:
   postgres_data:
-  postgres_keycloak_data: 
+  postgres_keycloak_data:
+
+networks:
+  app-network:
+    driver: bridge 

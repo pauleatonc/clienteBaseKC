@@ -82,37 +82,38 @@ Asegúrate de tener ambos archivos configurados correctamente según el tipo de 
    - Usuario accede a la aplicación frontend (http://localhost:5173)
    - Click en "Iniciar Sesión" redirige a Keycloak
    - Usuario ingresa credenciales en Keycloak
-   - Keycloak redirige de vuelta al frontend con un token
+   - Keycloak redirige de vuelta al frontend con un `access_token`
 
-2. **Intercambio de Token**:
-   - Frontend recibe token de Keycloak (`frontintegration`)
-   - Frontend hace petición a `/api/auth/token/` con el token
-   - Backend valida el token del frontend
-   - Backend obtiene un nuevo token usando credenciales de servicio
-   - Backend devuelve el nuevo token al frontend
+2. **Uso Directo del Token**:
+   - Frontend recibe `access_token` de Keycloak
+   - Frontend usa directamente este token para todas las peticiones a la API
+   - El token se incluye automáticamente en el header `Authorization: Bearer <token>`
+   - Si el token expira, se refresca automáticamente usando el `refresh_token`
 
-3. **Uso de la API**:
-   - Frontend almacena el token del backend
-   - Frontend usa este token para todas las peticiones a la API
-   - Backend valida que el token sea emitido por `backintegration`
-   - Las peticiones son procesadas si el token es válido
+3. **Validación en el Backend**:
+   - Backend valida el `access_token` usando JWKS (claves públicas de Keycloak)
+   - Se verifica la firma, expiración, audience e issuer del token
+   - Si el token es válido, se extrae la información del usuario
+   - Las peticiones son procesadas con la información del usuario autenticado
 
 ## Consideraciones de Seguridad
 
 1. **Tokens**:
-   - Los tokens del frontend solo son válidos para autenticación inicial
-   - Los tokens del backend son necesarios para acceder a la API
-   - Cada cliente tiene su propio conjunto de roles y permisos
+   - El `access_token` se usa directamente para autenticación con la API
+   - Los tokens se refrescan automáticamente cuando expiran
+   - Se valida la firma, expiración, audience e issuer en cada petición
+   - Los roles y permisos se extraen del token JWT
 
 2. **SSL/TLS**:
    - En producción, habilitar SSL/TLS
    - Configurar `KEYCLOAK_VERIFY_SSL=True`
    - Usar dominios HTTPS para todas las URLs
 
-3. **Secretos**:
-   - Mantener el Client Secret seguro
-   - Usar variables de entorno para configuración sensible
-   - No compartir tokens entre diferentes partes de la aplicación
+3. **Validación de Tokens**:
+   - Se usa JWKS para validar la firma de los tokens
+   - Se verifica que el token sea emitido por el realm correcto
+   - Se valida que el audience sea el cliente correcto
+   - No se almacenan tokens en el servidor
 
 ## Troubleshooting
 
